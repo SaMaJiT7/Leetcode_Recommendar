@@ -2,7 +2,7 @@ import requests
 import json
 from utilis import encode_str, decode_str
 
-def execute_code(language: str, code: str, input_data: str, expected_output: str):
+def execute_code(language: str, code: str, input_data: str, expected_output: str, prompt: str, entry_point: str):
     """Execute the given code using piston API and return the result."""
     
     API_URL = "https://emkc.org/api/v2/piston/execute"
@@ -87,4 +87,6 @@ def execute_code(language: str, code: str, input_data: str, expected_output: str
             }
         
     except Exception as e:
-        return {"status": "System Error", "error": str(e), "is_correct": False}   
+        return {"status": "System Error", "error": str(e), "is_correct": False}
+
+
