@@ -1,4 +1,3 @@
-import React from 'react';
 import './ResultsPanel.css';
 
 const ResultsPanel = ({ result }) => {
@@ -50,7 +49,52 @@ const ResultsPanel = ({ result }) => {
       </div>
 
       <div className="results-content">
-        {result.output && (
+        {/* Show test case progress */}
+        {result.total_cases && (
+          <div className="test-progress">
+            <div className="progress-header">
+              <span className="progress-text">
+                {result.passed_cases || 0} / {result.total_cases} Test Cases Passed
+              </span>
+              <span className="progress-percentage">
+                {Math.round(((result.passed_cases || 0) / result.total_cases) * 100)}%
+              </span>
+            </div>
+            <div className="progress-bar">
+              <div 
+                className="progress-fill"
+                style={{ 
+                  width: `${((result.passed_cases || 0) / result.total_cases) * 100}%`,
+                  backgroundColor: result.verdict === 'Accepted' ? '#4caf50' : '#ff9800'
+                }}
+              ></div>
+            </div>
+          </div>
+        )}
+
+        {/* Show failed test case details */}
+        {result.failed_on_case && (
+          <div className="result-section failed-case">
+            <h4>❌ Failed on Test Case {result.failed_on_case}</h4>
+            <div className="test-case-details">
+              <div className="detail-row">
+                <span className="detail-label">Input:</span>
+                <pre className="detail-value">{result.input || '(empty)'}</pre>
+              </div>
+              <div className="detail-row">
+                <span className="detail-label">Expected Output:</span>
+                <pre className="detail-value expected-output">{result.expected || '(empty)'}</pre>
+              </div>
+              <div className="detail-row">
+                <span className="detail-label">Your Output:</span>
+                <pre className="detail-value your-output">{result.your_output || '(empty)'}</pre>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Show output for simple runs (no test cases) */}
+        {!result.failed_on_case && result.output && (
           <div className="result-section">
             <h4>Output:</h4>
             <div className="output-box">
@@ -59,7 +103,7 @@ const ResultsPanel = ({ result }) => {
           </div>
         )}
 
-        {result.expected && (
+        {!result.failed_on_case && result.expected && (
           <div className="result-section">
             <h4>Expected:</h4>
             <div className="output-box expected">
@@ -79,7 +123,7 @@ const ResultsPanel = ({ result }) => {
 
         {result.verdict === 'Accepted' && (
           <div className="success-message">
-            <p>🎉 Congratulations! Your solution is correct!</p>
+            <p>🎉 Congratulations! Your solution passed all test cases!</p>
           </div>
         )}
       </div>

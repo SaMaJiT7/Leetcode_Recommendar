@@ -6,6 +6,7 @@ from langchain_core.documents import Document
 from dotenv import load_dotenv
 import os
 import re
+import json
 from pinecone import Pinecone, ServerlessSpec
 
 load_dotenv()
@@ -107,29 +108,26 @@ for row in dataset:
 
     texts.append(combined_text)
 
-    # Extract test cases from dataset directly (if available)
+    # Extract test cases from dataset (limit to 3 to avoid size issues)
     dataset_test_cases = row.get('input_output', []) or []
-    
-    # Convert to our format (rename 'output' to 'expected')
     test_cases = []
-    for tc in dataset_test_cases:
+    for tc in dataset_test_cases[:3]:  # Only take first 3 test cases
         if isinstance(tc, dict) and 'input' in tc:
             test_cases.append({
-                "input": tc.get('input', ''),
-                "expected": tc.get('output', tc.get('expected', ''))
+                "input": str(tc.get('input', ''))[:200],  # Limit input size
+                "expected": str(tc.get('output', tc.get('expected', '')))[:200]  # Limit output size
             })
     
-    # Fallback: try to extract from content if no test cases in dataset
-    if not test_cases:
-        test_cases = generate_test_case(row['problem_description'])
-
+    # Store limited test cases as compact JSON
+    test_cases_json = json.dumps(test_cases) if test_cases else "[]"
+    
     metadatas.append({
         "title": row['problem_description'][:100] + "...",  # Truncate for display
         "difficulty": row.get("difficulty") or 'Unknown',
         "url": problem_url,
-        "tags": tags,  # Store tags as list of strings (supported by Pinecone)
-        "task_id": row.get('task_id', ''),  # Store task_id for reference
-        # Note: test_cases removed - will be generated on-demand in backend using generate_testcase()
+        "tags": tags,  # Store tags as list of strings
+        "task_id": row.get('task_id', ''),
+        "test_cases": test_cases_json  # Store limited test cases
     })
 
 
@@ -173,6 +171,16 @@ def ingest_to_pinecone(texts: list[str], metadatas: list[dict]):
 
 if __name__ == "__main__":
     print(f"Ingesting {len(texts)} LeetCode problems...")
+
+    # Delete all existing vectors from the index
+    print(f"⚠️  Deleting all existing data from index '{INDEX_NAME}'...")
+    try:
+        index = pc.Index(INDEX_NAME)
+        # Delete all vectors by deleting everything in all namespaces
+        index.delete(delete_all=True)
+        print(f"✓ All existing data deleted from '{INDEX_NAME}'")
+    except Exception as e:
+        print(f"❌ Error deleting data: {e}")
     
     # Now ingest fresh data
     vectorstore = ingest_to_pinecone(texts, metadatas)

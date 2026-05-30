@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", temperature=0)
+llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0)
 
 class TestCase(BaseModel):
     input_data: str = Field(description="The raw input string to be passed to stdin (e.g., '2 3' or '[1,2,3]').")
@@ -46,6 +46,8 @@ def generate_testcase(problem_description: str) -> List[dict]:
     try:
         print("⚙️ Generating missing test cases via AI...")
         result = chain.invoke({"problem": problem_description})
+        print("✅ Test cases generated successfully.")
+        print(result['test_cases'])
         return result['test_cases']
     except Exception as e:
         print(f"⚠️ Test Case Generation Failed: {e}")

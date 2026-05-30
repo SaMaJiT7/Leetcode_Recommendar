@@ -121,6 +121,72 @@
   font-weight: 600;
 }
 
+.test-cases-section {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 2px solid #f0f0f0;
+}
+
+.test-cases-section h3 {
+  margin: 0 0 16px 0;
+  color: #333;
+  font-size: 1.2rem;
+}
+
+.test-cases-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.test-case-item {
+  background: #f8f9fa;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.test-case-header {
+  margin-bottom: 8px;
+}
+
+.test-case-number {
+  font-weight: 600;
+  color: #2196f3;
+  font-size: 0.9rem;
+}
+
+.test-case-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.test-case-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.field-label {
+  font-size: 0.8rem;
+  color: #666;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.field-value {
+  background: white;
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  font-family: 'Courier New', monospace;
+  font-size: 0.85rem;
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 .challenge-placeholder {
   text-align: center;
   padding: 40px;

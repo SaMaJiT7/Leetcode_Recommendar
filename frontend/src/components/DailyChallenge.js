@@ -1,4 +1,3 @@
-import React from 'react';
 import './DailyChallenge.css';
 
 const DailyChallenge = ({ challenge }) => {
@@ -67,6 +66,31 @@ const DailyChallenge = ({ challenge }) => {
           </div>
         )}
       </div>
+
+      {challenge.test_cases && challenge.test_cases.length > 0 && (
+        <div className="test-cases-section">
+          <h3>📝 Test Cases ({challenge.test_cases.length})</h3>
+          <div className="test-cases-list">
+            {challenge.test_cases.map((testCase, idx) => (
+              <div key={idx} className="test-case-item">
+                <div className="test-case-header">
+                  <span className="test-case-number">Case {idx + 1}</span>
+                </div>
+                <div className="test-case-content">
+                  <div className="test-case-field">
+                    <span className="field-label">Input:</span>
+                    <pre className="field-value">{testCase.input || '(empty)'}</pre>
+                  </div>
+                  <div className="test-case-field">
+                    <span className="field-label">Expected:</span>
+                    <pre className="field-value">{testCase.expected || '(empty)'}</pre>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="challenge-footer">
         <div className="challenge-stats">

@@ -142,11 +142,18 @@ async def submit_problem(submission: Submission):
     if not problem:
         raise HTTPException(status_code=404, detail=f"Problem '{submission.task_id}' not found in MongoDB")
     
-    # Get prompt (full code template) and entry_point (how to call function)
-    prompt = problem.get('prompt', '')
-    entry_point = problem.get('entry_point', '')
+    print(f"📋 Problem: {problem.get('title', submission.task_id)}")
     
-    print(f"📋 Entry point: {entry_point}")
+    # Extract starter_code (handle both dict and string formats)
+    starter_code_data = problem.get('starter_code', {})
+    print(f"🔍 starter_code type: {type(starter_code_data)}, value preview: {str(starter_code_data)[:100]}")
+    
+    if isinstance(starter_code_data, dict):
+        starter_code = starter_code_data.get(submission.language.lower(), "")
+    else:
+        starter_code = str(starter_code_data)  # Fallback to string
+    
+    print(f"✅ Using starter_code for {submission.language}: {starter_code[:50]}...")
 
     # If test cases provided, run all of them
     if submission.test_cases and len(submission.test_cases) > 0:
@@ -154,14 +161,13 @@ async def submit_problem(submission: Submission):
         passed_count = 0
         
         for i, case in enumerate(submission.test_cases):
-            # Execute Code with wrapping using prompt and entry_point
+            # Execute Code with wrapping using starter_code
             result = execute_code(
-                submission.language,
-                submission.code,
-                case.get('input', ""),
-                case.get('expected', ""),
-                prompt=prompt,
-                entry_point=entry_point
+                language=submission.language,
+                code=submission.code,
+                input_data=case.get('input', ""),
+                expected_output=case.get('expected', ""),
+                starter_code=starter_code
             )
             
             # Track results
@@ -217,12 +223,11 @@ async def submit_problem(submission: Submission):
     else:
         print("No test cases provided, running code without validation...")
         result = execute_code(
-            submission.language,
-            submission.code,
-            submission.input_data or "",
-            submission.expected_output or "",
-            prompt=prompt, # type: ignore
-            entry_point=entry_point # type: ignore
+            language=submission.language,
+            code=submission.code,
+            input_data=submission.input_data or "",
+            expected_output=submission.expected_output or "",
+            starter_code=starter_code
         )
         
         response = {

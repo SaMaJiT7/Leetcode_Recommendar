@@ -25,7 +25,7 @@ def get_datastore(user_weakness: str, current_level: str):
     # 1. Map natural language level to LeetCode difficulty
     level_map = {
         "Beginner": "Easy",
-        "Intermediate": "Medium", 
+        "Intermediate": "Medium",
         "Advanced": "Hard"
     }
     difficulty = level_map.get(current_level, "Medium")
@@ -45,22 +45,14 @@ def get_datastore(user_weakness: str, current_level: str):
         weakness_lower.replace("-", ""),  # "slidingwindow"
     ]
     
-    try:
-        # This guarantees the difficulty is correct, so the vector search only focuses on the Topic.
-        base_retriever = vectorstore.as_retriever(
-            search_kwargs={
-                "k": 5, # Fetch more candidates since we might filter some out later
-                "filter": {"difficulty": difficulty, "tags": {"$in": weakness_variations}}
-                }
-        )
-    except Exception as e:
-        print(f"⚠️ Filtering failed: {e}, using difficulty only")
-        base_retriever = vectorstore.as_retriever(
-            search_kwargs={
-                "k": 5,
-                "filter": {"difficulty": difficulty}
-                }
-        )
+    # Start with just difficulty filter - let semantic search handle topic matching
+    print(f"🔍 Searching for difficulty={difficulty}, topic='{user_weakness}'")
+    base_retriever = vectorstore.as_retriever(
+        search_kwargs={
+            "k": 5,
+            "filter": {"difficulty": difficulty}
+        }
+    )
 
     prompt = PromptTemplate(
         input_variables=["question"],
@@ -84,16 +76,21 @@ def get_datastore(user_weakness: str, current_level: str):
 
     result_str = ""
     # Use a set to avoid duplicates from multiple queries
+    problems = []
     seen_urls = set()
     
-    for idx , doc in enumerate(results):
+    for doc in results:
         url = doc.metadata.get('url', '#')
         if url not in seen_urls:
-            task_id = doc.metadata.get('task_id', 'Unknown Task ID')
-            result_str += f"{idx+1}. {task_id} ({url})\n"
+            problems.append({
+                "task_id": doc.metadata.get('task_id', 'Unknown'),
+                "url": url,
+                "content": doc.page_content,
+                "metadata": doc.metadata
+            })
             seen_urls.add(url)
     
-    return result_str if result_str else "No relevant problems found."
+    return problems if problems else []
 
 if __name__ == "__main__":
     # Example usage

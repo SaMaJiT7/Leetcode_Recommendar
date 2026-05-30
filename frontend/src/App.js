@@ -29,8 +29,9 @@ function App() {
         current_level: userLevel
       });
       setChallenge(response.data);
-      // Set default code template based on language
-      setCode(getDefaultCode(language));
+      // Use starter_code from MongoDB if available, otherwise use default
+      const starterCode = response.data.starter_code?.[language] || getDefaultCode(language);
+      setCode(starterCode);
     } catch (error) {
       console.error('Error fetching daily challenge:', error);
       alert('Failed to load daily challenge. Please try again.');
@@ -67,7 +68,9 @@ int main() {
 
   const handleLanguageChange = (newLanguage) => {
     setLanguage(newLanguage);
-    setCode(getDefaultCode(newLanguage));
+    // Use starter_code from challenge if available
+    const starterCode = challenge?.starter_code?.[newLanguage] || getDefaultCode(newLanguage);
+    setCode(starterCode);
   };
 
   const handleSubmit = async () => {
@@ -85,16 +88,17 @@ int main() {
         ? challenge.test_cases 
         : null;
 
-      console.log('Challenge:', challenge);
-      console.log('Test cases to send:', testCasesToSend);
-
-      const response = await axios.post(`${API_BASE_URL}/submit`, {
-        language: language,
-        code: code,
-        input_data: challenge.test_cases?.[0]?.input || "",
-        expected_output: challenge.test_cases?.[0]?.expected || "",
-        test_cases: testCasesToSend
-      });
+console.log('Challenge:', challenge);
+console.log('Test cases to send:', testCasesToSend);
+  
+const response = await axios.post(`${API_BASE_URL}/submit`, {
+  task_id: challenge.task_id,  // Add task_id for MongoDB lookup
+  language: language,
+  code: code,
+  input_data: challenge.test_cases?.[0]?.input || "",
+  expected_output: challenge.test_cases?.[0]?.expected || "",
+  test_cases: testCasesToSend
+});
 
       setResult(response.data);
     } catch (error) {
@@ -173,6 +177,7 @@ int main() {
               onLanguageChange={handleLanguageChange}
               onSubmit={handleSubmit}
               submitting={submitting}
+              testCaseCount={challenge?.test_cases?.length || 0}
             />
 
             {result && (

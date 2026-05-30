@@ -1,8 +1,7 @@
-import React from 'react';
 import Editor from '@monaco-editor/react';
 import './CodeEditor.css';
 
-const CodeEditor = ({ code, language, onCodeChange, onLanguageChange, onSubmit, submitting }) => {
+const CodeEditor = ({ code, language, onCodeChange, onLanguageChange, onSubmit, submitting, testCaseCount }) => {
   const languages = [
     { value: 'python', label: 'Python' },
     { value: 'java', label: 'Java' },
@@ -18,6 +17,11 @@ const CodeEditor = ({ code, language, onCodeChange, onLanguageChange, onSubmit, 
       <div className="editor-header">
         <div className="editor-title">
           <h3>💻 Code Editor</h3>
+          {testCaseCount > 0 && (
+            <span className="test-count-badge">
+              {testCaseCount} Test {testCaseCount === 1 ? 'Case' : 'Cases'}
+            </span>
+          )}
         </div>
         <div className="editor-controls">
           <select

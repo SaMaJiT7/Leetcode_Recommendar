@@ -21,6 +21,21 @@
   font-size: 1.1rem;
 }
 
+.editor-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.test-count-badge {
+  background: #4caf50;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
 .editor-controls {
   display: flex;
   gap: 12px;
